@@ -1,0 +1,141 @@
+PODS:
+  - AFNetworking (3.2.1):
+    - AFNetworking/NSURLSession (= 3.2.1)
+    - AFNetworking/Reachability (= 3.2.1)
+    - AFNetworking/Security (= 3.2.1)
+    - AFNetworking/Serialization (= 3.2.1)
+    - AFNetworking/UIKit (= 3.2.1)
+  - AFNetworking/NSURLSession (3.2.1):
+    - AFNetworking/Reachability
+    - AFNetworking/Security
+    - AFNetworking/Serialization
+  - AFNetworking/Reachability (3.2.1)
+  - AFNetworking/Security (3.2.1)
+  - AFNetworking/Serialization (3.2.1)
+  - AFNetworking/UIKit (3.2.1):
+    - AFNetworking/NSURLSession
+  - BEMCheckBox (1.4.1)
+  - Bolts (1.9.0):
+    - Bolts/AppLinks (= 1.9.0)
+    - Bolts/Tasks (= 1.9.0)
+  - Bolts/AppLinks (1.9.0):
+    - Bolts/Tasks
+  - Bolts/Tasks (1.9.0)
+  - CustomIOSAlertView (0.9.5)
+  - DXPopover (0.1.1)
+  - FBSDKCoreKit (4.33.0):
+    - Bolts (~> 1.7)
+  - FBSDKLoginKit (4.33.0):
+    - FBSDKCoreKit
+  - GoogleSignIn (4.1.2):
+    - "GoogleToolboxForMac/NSDictionary+URLArguments (~> 2.1)"
+    - "GoogleToolboxForMac/NSString+URLArguments (~> 2.1)"
+    - GTMOAuth2 (~> 1.0)
+    - GTMSessionFetcher/Core (~> 1.1)
+  - GoogleToolboxForMac/DebugUtils (2.1.4):
+    - GoogleToolboxForMac/Defines (= 2.1.4)
+  - GoogleToolboxForMac/Defines (2.1.4)
+  - "GoogleToolboxForMac/NSDictionary+URLArguments (2.1.4)":
+    - GoogleToolboxForMac/DebugUtils (= 2.1.4)
+    - GoogleToolboxForMac/Defines (= 2.1.4)
+    - "GoogleToolboxForMac/NSString+URLArguments (= 2.1.4)"
+  - "GoogleToolboxForMac/NSString+URLArguments (2.1.4)"
+  - GTMOAuth2 (1.1.6):
+    - GTMSessionFetcher (~> 1.1)
+  - GTMSessionFetcher (1.1.15):
+    - GTMSessionFetcher/Full (= 1.1.15)
+  - GTMSessionFetcher/Core (1.1.15)
+  - GTMSessionFetcher/Full (1.1.15):
+    - GTMSessionFetcher/Core (= 1.1.15)
+  - HNKGooglePlacesAutocomplete (1.2.0):
+    - AFNetworking (~> 3.0)
+    - Mantle (~> 2.0)
+  - IQKeyboardManager (6.0.3)
+  - JSQMessagesViewController (7.3.5):
+    - JSQSystemSoundPlayer (~> 2.0.1)
+  - JSQSystemSoundPlayer (2.0.1)
+  - LMGeocoder (1.0.9)
+  - Mantle (2.1.0):
+    - Mantle/extobjc (= 2.1.0)
+  - Mantle/extobjc (2.1.0)
+  - OneSignal (2.8.4)
+  - SDWebImage (4.3.3):
+    - SDWebImage/Core (= 4.3.3)
+  - SDWebImage/Core (4.3.3)
+  - Stripe (13.0.0)
+  - SVProgressHUD (2.2.5)
+  - TOCropViewController (2.3.6)
+  - TZImagePickerController (2.1.1)
+
+DEPENDENCIES:
+  - AFNetworking
+  - BEMCheckBox
+  - CustomIOSAlertView (~> 0.9.4)
+  - DXPopover
+  - FBSDKLoginKit
+  - GoogleSignIn
+  - HNKGooglePlacesAutocomplete (~> 1.1)
+  - IQKeyboardManager
+  - JSQMessagesViewController
+  - LMGeocoder
+  - OneSignal (< 3.0, >= 2.5.2)
+  - SDWebImage
+  - Stripe
+  - SVProgressHUD
+  - TOCropViewController
+  - TZImagePickerController
+
+SPEC REPOS:
+  https://github.com/cocoapods/specs.git:
+    - AFNetworking
+    - BEMCheckBox
+    - Bolts
+    - CustomIOSAlertView
+    - DXPopover
+    - FBSDKCoreKit
+    - FBSDKLoginKit
+    - GoogleSignIn
+    - GoogleToolboxForMac
+    - GTMOAuth2
+    - GTMSessionFetcher
+    - HNKGooglePlacesAutocomplete
+    - IQKeyboardManager
+    - JSQMessagesViewController
+    - JSQSystemSoundPlayer
+    - LMGeocoder
+    - Mantle
+    - OneSignal
+    - SDWebImage
+    - Stripe
+    - SVProgressHUD
+    - TOCropViewController
+    - TZImagePickerController
+
+SPEC CHECKSUMS:
+  AFNetworking: b6f891fdfaed196b46c7a83cf209e09697b94057
+  BEMCheckBox: 5ba6e37ade3d3657b36caecc35c8b75c6c2b1a4e
+  Bolts: ac6567323eac61e203f6a9763667d0f711be34c8
+  CustomIOSAlertView: cc4fa8e36219be3fd5ebcd40789f5b4aaae0f38e
+  DXPopover: 13e6bbd1a0da4e62b2190de51f43a94850769e0f
+  FBSDKCoreKit: 572b047a7e029bc44542bcf8a59414e7ff2b543e
+  FBSDKLoginKit: 88cb456349cfb3b554427ce4f8b43729d85dfb40
+  GoogleSignIn: d9ef55b10f0aa401a5de2747f59b725e4b9732ac
+  GoogleToolboxForMac: 91c824d21e85b31c2aae9bb011c5027c9b4e738f
+  GTMOAuth2: c77fe325e4acd453837e72d91e3b5f13116857b2
+  GTMSessionFetcher: 5fa5b80fd20e439ef5f545fb2cb3ca6c6714caa2
+  HNKGooglePlacesAutocomplete: 1977cf89b41080aba06ff0e934eb72c01efb8e03
+  IQKeyboardManager: c390e612f4b98c8fd748016470138537dc163ead
+  JSQMessagesViewController: 6587f56aedbcb150a8ba1d968e1ef58b1bc758b7
+  JSQSystemSoundPlayer: c5850e77a4363ffd374cd851154b9af93264ed8d
+  LMGeocoder: cd104740f61098ef73272b5ed8a57ad63d23fdc7
+  Mantle: 2fa750afa478cd625a94230fbf1c13462f29395b
+  OneSignal: 7218a5a787f6685de81bdb487e696439e8c8f59b
+  SDWebImage: de4d90b5bff3571eae7bd16202b1f43135409fa5
+  Stripe: 542f2c4493ce31a99fa041fe4973206e8c868f29
+  SVProgressHUD: 1428aafac632c1f86f62aa4243ec12008d7a51d6
+  TOCropViewController: 6d972f2c609372312648f96758e13a7f689efbc0
+  TZImagePickerController: 788184b04158006b25ffdbccbb550bfc193e9d9c
+
+PODFILE CHECKSUM: 4a2c0b6aa81d15a56962373d0d3e2dcf38aee393
+
+COCOAPODS: 1.5.2

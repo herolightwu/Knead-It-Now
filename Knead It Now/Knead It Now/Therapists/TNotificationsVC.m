@@ -1,0 +1,327 @@
+//
+//  TNotificationsVC.m
+//  Knead It Now
+//
+//  Created by meixiang wu on 2018/6/17.
+//  Copyright © 2018 meixiang wu. All rights reserved.
+//
+
+#import "TNotificationsVC.h"
+#import "TAppointmentTVC.h"
+#import "Config.h"
+#import "TUserProfileVC.h"
+#import "TGiveRatingVC.h"
+#import "AppDelegate.h"
+#import "HttpApi.h"
+#import "EventModel.h"
+#import <SVProgressHUD/SVProgressHUD.h>
+#import "UIImageView+WebCache.h"
+#import "TMessageVC.h"
+
+@interface TNotificationsVC ()<UITableViewDelegate, UITableViewDataSource>
+
+@end
+
+@implementation TNotificationsVC
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(processAccept:) name:NOTIFICATION_STATUS object:nil];
+    
+    self.events = [[NSMutableArray alloc] init];
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+- (void)viewWillAppear:(BOOL)animated{
+    [super viewWillAppear:animated];
+    [self loadEvents];
+}
+
+- (void)processAccept:(NSNotification*)msg{
+    [self loadEvents];
+}
+
+- (void)loadEvents{
+    [SVProgressHUD showWithStatus:@"Loading..."];
+    [HttpApi getEvents:g_user.userId Success:^(NSDictionary* result){
+        [SVProgressHUD dismiss];
+        self.events = [[NSMutableArray alloc] init];
+        NSArray* resp = (NSArray*) result;
+        for(int i = 0; i < resp.count; i++){
+            EventModel* one = [[EventModel alloc] initWithDictionary:resp[i]];
+            [self.events addObject:one];
+        }
+        [self.mTableView reloadData];
+    } Fail:^(NSString* errStr){
+        [SVProgressHUD showErrorWithStatus:errStr];
+    }];
+}
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    // Return the number of rows in the section.
+    return [self.events count];
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    EventModel* one = self.events[indexPath.row];
+    
+    int h = 68; // type = 4
+    if([one.type_id isEqualToString:@"11"]) h = 160;//type = 11, requested
+    else if([one.type_id isEqualToString:@"12"]) h = 126;// type = 12, finished
+    else if([one.type_id isEqualToString:@"13"]) h = 68;// type = 3
+    return h;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    UITableViewCell* cell;
+    EventModel* one = self.events[indexPath.row];
+    NSString* contentMsg;
+    NSDateFormatter *inFormatter = [[NSDateFormatter alloc] init];
+    [inFormatter setDateFormat:@"MM/dd/yyyy"];
+    NSString* today_str = [inFormatter stringFromDate:[NSDate date]];
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+    NSString* event_time_str = [NSString stringWithFormat:@"%@ %@", today_str, one.event_time];
+    [dateFormatter setDateFormat:@"MM/dd/yyyy hh:mm a"];
+    NSDate* eTime = [dateFormatter dateFromString:event_time_str];
+    if([one.type_id isEqualToString:@"11"]){
+        TAppointmentTVC *tvc = [tableView dequeueReusableCellWithIdentifier:@"RID_TAppointmentTVC" forIndexPath:indexPath];
+        contentMsg = [NSString stringWithFormat:@"<html><body><font size=5 color=black>%@</font></body></html>", one.content];
+        NSAttributedString * attrStr = [[NSAttributedString alloc] initWithData:[contentMsg dataUsingEncoding:NSUnicodeStringEncoding] options:@{ NSDocumentTypeDocumentAttribute: NSHTMLTextDocumentType } documentAttributes:nil error:nil];
+        tvc.mBookContent.attributedText = attrStr;
+        
+        if([one.sender_photo length] > 0){
+            NSString* url = [NSString stringWithFormat:@"%@/%@%@", SERVER_URL, PHOTO_BASE_URL, one.sender_photo];
+            [tvc.mUserImage sd_setImageWithURL:[NSURL URLWithString:url]];
+        }
+        
+        NSInteger timeInterval = [[NSDate date] timeIntervalSinceDate:eTime];
+        if(timeInterval > 3600){
+            tvc.mPastTime.text = [NSString stringWithFormat:@"%ld hours ago", (long)(timeInterval / 3600)];
+        } else{
+            tvc.mPastTime.text = [NSString stringWithFormat:@"%ld minutes ago", (long)(timeInterval / 60)];
+        }
+        
+        tvc.mImgBtn.tag = indexPath.row;
+        [tvc.mImgBtn addTarget:self
+                     action:@selector(tapDetected:)
+           forControlEvents:UIControlEventTouchUpInside];
+        
+        tvc.mConfirmBtn.tag = indexPath.row;
+        [tvc.mConfirmBtn addTarget:self
+                        action:@selector(tapConfirmed:)
+              forControlEvents:UIControlEventTouchUpInside];
+        
+        tvc.mRejectBtn.tag = indexPath.row;
+        [tvc.mRejectBtn addTarget:self
+                            action:@selector(tapRejected:)
+                  forControlEvents:UIControlEventTouchUpInside];
+        
+        cell = tvc;
+        return cell;
+    } else if([one.type_id isEqualToString:@"13"]){
+        cell = [tableView dequeueReusableCellWithIdentifier:@"RID_TRateTVC" forIndexPath:indexPath];
+        UIImageView* userImg = [cell viewWithTag:11];
+        CALayer *imageLayer = userImg.layer;
+        [imageLayer setCornerRadius:25];
+        [imageLayer setBorderWidth:1];
+        [imageLayer setMasksToBounds:YES];
+        [imageLayer setBorderColor:CONTROLL_EDGE_COLOR.CGColor];
+        
+        if([one.sender_photo length] > 0){
+            NSString* url = [NSString stringWithFormat:@"%@/%@%@", SERVER_URL, PHOTO_BASE_URL, one.sender_photo];
+            [userImg sd_setImageWithURL:[NSURL URLWithString:url]];
+        }
+        
+        UIButton* imgbtn = [cell viewWithTag:14];
+        imgbtn.tag = indexPath.row;
+        [imgbtn addTarget:self
+                        action:@selector(tapDetected:)
+              forControlEvents:UIControlEventTouchUpInside];
+        
+        UILabel* timelb = [cell viewWithTag:12];
+        NSInteger timeInterval = [[NSDate date] timeIntervalSinceDate:eTime];
+        if(timeInterval > 3600){
+            timelb.text = [NSString stringWithFormat:@"%ld hours ago", (long)(timeInterval / 3600)];
+        } else{
+            timelb.text = [NSString stringWithFormat:@"%ld minutes ago", (long)(timeInterval / 60)];
+        }
+        
+        UILabel* contentlb1 = [cell viewWithTag:13];
+        contentMsg = [NSString stringWithFormat:@"<html><body><font size=5 color=black>%@</font></body></html>", one.content];
+        NSAttributedString * attrStr1 = [[NSAttributedString alloc] initWithData:[contentMsg dataUsingEncoding:NSUnicodeStringEncoding] options:@{ NSDocumentTypeDocumentAttribute: NSHTMLTextDocumentType } documentAttributes:nil error:nil];
+        contentlb1.attributedText = attrStr1;
+        
+        return cell;
+    } else if([one.type_id isEqualToString:@"14"]){
+        cell = [tableView dequeueReusableCellWithIdentifier:@"RID_TMessageTVC" forIndexPath:indexPath];
+        UIImageView* userImg = [cell viewWithTag:21];
+        CALayer *imageLayer = userImg.layer;
+        [imageLayer setCornerRadius:25];
+        [imageLayer setBorderWidth:1];
+        [imageLayer setMasksToBounds:YES];
+        [imageLayer setBorderColor:CONTROLL_EDGE_COLOR.CGColor];
+        
+        if([one.sender_photo length] > 0){
+            NSString* url = [NSString stringWithFormat:@"%@/%@%@", SERVER_URL, PHOTO_BASE_URL, one.sender_photo];
+            [userImg sd_setImageWithURL:[NSURL URLWithString:url]];
+        }
+        
+        UIButton* imgbtn = [cell viewWithTag:24];
+        imgbtn.tag = indexPath.row;
+        [imgbtn addTarget:self
+                   action:@selector(tapDetected:)
+         forControlEvents:UIControlEventTouchUpInside];
+        
+        UILabel* timelb = [cell viewWithTag:22];
+        NSInteger timeInterval = [[NSDate date] timeIntervalSinceDate:eTime];
+        if(timeInterval > 3600){
+            timelb.text = [NSString stringWithFormat:@"%ld hours ago", (long)(timeInterval / 3600)];
+        } else{
+            timelb.text = [NSString stringWithFormat:@"%ld minutes ago", (long)(timeInterval / 60)];
+        }
+        
+        UILabel* contentlb2 = [cell viewWithTag:23];
+        contentMsg = [NSString stringWithFormat:@"<html><body><font size=5 color=black>%@</font></body></html>", one.content];
+        NSAttributedString * attrStr2 = [[NSAttributedString alloc] initWithData:[contentMsg dataUsingEncoding:NSUnicodeStringEncoding] options:@{ NSDocumentTypeDocumentAttribute: NSHTMLTextDocumentType } documentAttributes:nil error:nil];
+        contentlb2.attributedText = attrStr2;
+        
+        return cell;
+    } else if([one.type_id isEqualToString:@"12"]){
+        cell = [tableView dequeueReusableCellWithIdentifier:@"RID_TFinishTVC" forIndexPath:indexPath];
+        UIImageView* userImg = [cell viewWithTag:31];
+        CALayer *imageLayer = userImg.layer;
+        [imageLayer setCornerRadius:25];
+        [imageLayer setBorderWidth:1];
+        [imageLayer setMasksToBounds:YES];
+        [imageLayer setBorderColor:CONTROLL_EDGE_COLOR.CGColor];
+        
+        if([one.sender_photo length] > 0){
+            NSString* url = [NSString stringWithFormat:@"%@/%@%@", SERVER_URL, PHOTO_BASE_URL, one.sender_photo];
+            [userImg sd_setImageWithURL:[NSURL URLWithString:url]];
+        }
+        
+        UIButton* imgbtn = [cell viewWithTag:34];
+        imgbtn.tag = indexPath.row;
+        [imgbtn addTarget:self
+                   action:@selector(tapDetected:)
+         forControlEvents:UIControlEventTouchUpInside];
+        
+        UILabel* timelb = [cell viewWithTag:32];
+        NSInteger timeInterval = [[NSDate date] timeIntervalSinceDate:eTime];
+        if(timeInterval > 3600){
+            timelb.text = [NSString stringWithFormat:@"%ld hours ago", (long)(timeInterval / 3600)];
+        } else{
+            timelb.text = [NSString stringWithFormat:@"%ld minutes ago", (long)(timeInterval / 60)];
+        }
+        
+        UILabel* contentlb3 = [cell viewWithTag:33];
+        contentMsg = [NSString stringWithFormat:@"<html><body><font size=5 color=black>%@</font></body></html>", one.content];
+        NSAttributedString * attrStr3 = [[NSAttributedString alloc] initWithData:[contentMsg dataUsingEncoding:NSUnicodeStringEncoding] options:@{ NSDocumentTypeDocumentAttribute: NSHTMLTextDocumentType } documentAttributes:nil error:nil];
+        contentlb3.attributedText = attrStr3;
+        
+        return cell;
+    }
+    
+    return nil;
+}
+
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    EventModel* one = self.events[indexPath.row];
+    if([one.type_id isEqualToString:@"12"]){
+        TGiveRatingVC *vc = [self.storyboard instantiateViewControllerWithIdentifier:@"SID_TGiveRatingVC"];
+        vc.bookid = one.book_id;
+        [self.navigationController pushViewController:vc animated:YES];
+    } else if([one.type_id isEqualToString:@"13"]){//Rate
+        [self readRateEvent:one.eventid];
+    } else if([one.type_id isEqualToString:@"14"]){//message
+        [self readMessageEvent:one];
+    }
+    
+}
+
+- (void)readMessageEvent:(EventModel *)emodel{
+    [SVProgressHUD show];
+    [HttpApi setEventRead:emodel.eventid Success:^(NSDictionary* result){
+        [SVProgressHUD dismiss];
+        if([emodel.book_status isEqualToString:@"requested"] || [emodel.book_status isEqualToString:@"confirmed"]){
+            TMessageVC *vc = [self.storyboard instantiateViewControllerWithIdentifier:@"SID_TMessageVC"];
+            vc.bookid = emodel.book_id;
+            vc.fromphoto = emodel.sender_photo;
+            vc.fromid = emodel.sender_id;
+            [self.navigationController pushViewController:vc animated:YES];
+        } else{
+            [self loadEvents];
+        }
+        
+    } Fail:^(NSString* errStr){
+        [SVProgressHUD showErrorWithStatus:errStr];
+    }];
+}
+
+- (void)readRateEvent:(NSString *)eid{
+    [SVProgressHUD show];
+    [HttpApi setEventRead:eid Success:^(NSDictionary* result){
+        [SVProgressHUD dismiss];
+        [self loadEvents];
+    } Fail:^(NSString* errStr){
+        [SVProgressHUD showErrorWithStatus:errStr];
+    }];
+}
+
+- (IBAction)onBack:(id)sender {
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+-(IBAction)tapDetected:(id)sender{
+    UIButton* img = (UIButton*)sender;
+    EventModel* one = self.events[img.tag];
+    TUserProfileVC *vc = [self.storyboard instantiateViewControllerWithIdentifier:@"SID_TUserProfileVC"];
+    vc.userid = one.sender_id;
+    vc.bookid = one.book_id;
+    [self.navigationController pushViewController:vc animated:YES];
+}
+
+-(IBAction)tapConfirmed:(id)sender{
+    UIButton* btn = (UIButton*)sender;
+    EventModel* one = self.events[btn.tag];
+    NSDate *todayDate = [NSDate date]; //Get todays date
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init]; // here we create NSDateFormatter object for change the Format of date.
+    [dateFormatter setDateFormat:@"hh:mm a"]; //Here we can set the format which we need
+    NSString *booktime = [dateFormatter stringFromDate:todayDate];
+    [SVProgressHUD showWithStatus:@"Confirm Appointment..."];
+    [HttpApi confirmAppointment:one.book_id ConfirmTime:booktime Success:^(NSDictionary* result){
+        [SVProgressHUD dismiss];
+        [self.navigationController popToRootViewControllerAnimated:YES];
+    } Fail:^(NSString *errstr){
+        [SVProgressHUD showErrorWithStatus:errstr];
+    }];
+}
+
+-(IBAction)tapRejected:(id)sender{
+    UIButton* btn = (UIButton*)sender;
+    EventModel* one = self.events[btn.tag];
+    [SVProgressHUD showWithStatus:@"Reject Appointment..."];
+    [HttpApi rejectAppointment:one.book_id Success:^(NSDictionary* result){
+        [SVProgressHUD dismiss];
+        [self.navigationController popToRootViewControllerAnimated:YES];//[self loadEvents];
+    } Fail:^(NSString *errstr){
+        [SVProgressHUD showErrorWithStatus:errstr];
+    }];
+}
+@end
