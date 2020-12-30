@@ -1,0 +1,23 @@
+source 'https://github.com/CocoaPods/Specs.git'
+
+target 'Knead It Now' do
+	use_frameworks!
+	
+	pod 'AFNetworking'
+	pod 'SVProgressHUD'
+	pod 'IQKeyboardManager'
+	pod 'SDWebImage'
+	pod 'TZImagePickerController'
+	pod 'CustomIOSAlertView', '~> 0.9.4'
+	pod 'LMGeocoder'
+	pod 'BEMCheckBox'
+	pod 'DXPopover'
+	pod 'TOCropViewController'
+	pod 'HNKGooglePlacesAutocomplete', '~> 1.1'
+	pod 'GoogleSignIn'
+	pod 'FBSDKLoginKit'
+	pod 'OneSignal', '>= 2.5.2', '< 3.0'
+	pod 'JSQMessagesViewController'
+    pod 'Stripe'
+
+end
